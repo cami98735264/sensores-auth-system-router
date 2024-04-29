@@ -1,15 +1,25 @@
-import React, { useState } from 'react';
-import { useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useContext } from 'react';
 import axios from 'axios';
+import loginContext from '../../index.js';
+
 
 const AuthenticationForms = ({ isLogin }) => {
-    const navigate = useNavigate();
+
+    const context = useContext(loginContext);
     // Make the alert show in the center of the screen and top layer
     const cookieMessage = "Por favor acepte el uso de cookies para continuar"
     const [messageAlert, setMessageAlert] = useState(cookieMessage);
     const [previous, setPrevious] = useState("");
-
+    useEffect(() => {
+        const redirectToDashboard = () => {
+            if(context.requestCompleted && context.isLogged) {
+                window.location.href = "/dashboard";
+                console.log("hola");
+            }
+        }
+        redirectToDashboard();
+    }, [context.requestCompleted]);
     const handleSubmit = async (e) => {
         e.preventDefault();
         const alert = document.getElementById('cookie-alert');
