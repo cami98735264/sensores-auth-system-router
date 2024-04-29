@@ -16,6 +16,7 @@ const AuthenticationContext = ({ children }) => {
                         "Content-Type": "application/json"
                     }
                 });
+                console.log(response.data);
                 setData(response.data);
                 setRequestCompleted(true);
             } catch(err) {
