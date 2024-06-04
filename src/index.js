@@ -16,7 +16,7 @@ const loginContext = createContext();
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <h1>Home</h1>,
+    element: <a href='/login'>Click Aquí</a>,
   },
   {
     path: "/login",

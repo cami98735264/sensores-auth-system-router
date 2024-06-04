@@ -20,13 +20,45 @@ const AuthenticationForms = ({ isLogin }) => {
         }
         redirectToDashboard();
     }, [context.requestCompleted]);
+    const handleGenerarCodigo = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await axios.post("/api/auth/generate_code", { email: document.querySelector("input[name='email']").value }, {
+                withCredentials: true,
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            });
+            // Show a message to the user that the code was sent to the email
+            // check if modal is already open and if it's, don't use alert.classList.remove("hidden")
+            const alert = document.getElementById('cookie-alert');
+            if(alert.classList.contains("hidden")) alert.classList.remove("hidden");
+
+            if(previous === response.data.message) return;
+            setMessageAlert((previous) => {
+                setPrevious(previous);
+                return response.data.message;
+            });
+            console.log(response.data);
+        } catch(err) {
+            console.log(err);
+            const alert = document.getElementById('cookie-alert');
+            if(alert.classList.contains("hidden")) alert.classList.remove("hidden");
+            setMessageAlert((previous) => {
+                setPrevious(previous);
+                return err.response.data.message;
+            });
+        }
+    }
+
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         const alert = document.getElementById('cookie-alert');
         const formData = new FormData(e.target);
         const data = Object.fromEntries(formData);
         data.acceptCookies = formData.get("cookies") === "on";
-        const { email, password, names, lastname, second_lastname,  acceptCookies, telefono} = data;
+        const { email, password, names, lastname, second_lastname,  acceptCookies, telefono, code } = data;
         console.log(data)
         if(!data.acceptCookies) {
             alert.classList.remove("hidden");
@@ -41,7 +73,7 @@ const AuthenticationForms = ({ isLogin }) => {
             alert.classList.add("hidden");
         }
         try {
-            let dataToSubmit = isLogin ? { email, password } : { email, password, names, lastname, second_lastname, telefono, acceptCookies };
+            let dataToSubmit = isLogin ? { email, password, code } : { email, password, names, lastname, second_lastname, telefono, acceptCookies };
             const response = await axios.post(`/api/auth/${isLogin ? "login" : "register"}`, dataToSubmit, { 
                 withCredentials: true,
                 headers: {
@@ -50,7 +82,16 @@ const AuthenticationForms = ({ isLogin }) => {
                 }
             });
             console.log(response.data);
-            window.location.href = "/dashboard";
+            if(!isLogin) {
+                alert.classList.remove("hidden");
+                if(previous === response.data.message) return;
+                setMessageAlert((previous) => {
+                    setPrevious(previous);
+                    return response.data.message;
+                });
+                return;
+            }
+            window.location.href = "/login";
         } catch(err) {
             alert.classList.remove("hidden");
             if(previous === err.response.data.message) return;
@@ -112,6 +153,17 @@ const AuthenticationForms = ({ isLogin }) => {
 
         )    
         }
+        {isLogin && (
+            /* Add an input that receives a six digit code to validate the account, and add a button next to it to regenerate the code, the url to the api route that generates it is POST /api/auth/generate_code*/
+            <div>
+                <label htmlFor='code'>Ingrese el código de validación</label>
+                <label className="input input-bordered flex items-center gap-2">
+                    <input type="number" className="grow" placeholder="Código de validación" name='code' />
+                </label>
+                <button className="btn btn-xs sm:btn-sm md:btn-md lg:btn-md" onClick={handleGenerarCodigo}>Generar código</button>
+            </div>
+
+        )}
         <div className="form-control">
             <label className="label cursor-pointer">
                 <span className="label-text">Acepta el uso de cookies en su navegador</span> 
